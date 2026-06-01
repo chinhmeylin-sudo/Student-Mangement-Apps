@@ -1,52 +1,31 @@
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:student_management_apps/app/modules/attendance/models/attendace_model.dart';
+import '/app/modules/attendance/views/attendance_report_screen.dart';
 
-import '../../../data/models/student_model.dart';
-import '../../../data/services/attendance_service.dart';
+class AttendanceController extends GetxController{
+      final TextEditingController nameController = TextEditingController();
 
-class AttendanceController extends GetxController {
-  final AttendanceService service = AttendanceService();
+      RxList<AttendaceModel> attendanceList = <AttendaceModel>[].obs;
+      void addAttendance({
+        required String statusName,
+        required String status,
+      }){
+          if(statusName.isEmpty) return;
 
-  RxList<StudentModel> students = <StudentModel>[].obs;
 
-  RxBool isLoading = false.obs;
+          attendanceList.add(
+            AttendaceModel(
+              studentName: statusName,
+             status: status,
+              date: DateTime.now().toString().substring(0,10),
+              )
+          );
+      }
 
-  @override
-  void onInit() {
-    fetchStudents();
-    super.onInit();
-  }
+      
 
-  Future<void> fetchStudents() async {
-    isLoading.value = true;
+        int get totalPresent => attendanceList.where((e)=> e.status == "Present").length;
+        int get totalAbsent => attendanceList.where((e)=> e.status == "Absent").length;
 
-    students.value = await service.getStudents();
-
-    isLoading.value = false;
-  }
-
-  Future<void> addStudent(String name) async {
-    if (name.isEmpty) return;
-
-    await service.addStudent(StudentModel(name: name, present: false));
-
-    fetchStudents();
-  }
-
-  Future<void> toggleAttendance(StudentModel student) async {
-    student.present = !student.present;
-
-    await service.updateStudent(student);
-
-    fetchStudents();
-  }
-
-  Future<void> deleteStudent(int id) async {
-    await service.deleteStudent(id);
-
-    fetchStudents();
-  }
-
-  int get totalPresent {
-    return students.where((student) => student.present).length;
-  }
-}
+}     

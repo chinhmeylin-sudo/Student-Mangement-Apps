@@ -1,10 +1,18 @@
 import 'dart:ui';
-
+import 'task_screen.dart';
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'grade_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:student_management_apps/app/modules/attendance/views/attendance_screen.dart';
 import 'package:student_management_apps/app/modules/attendance/views/attendance_view.dart';
 import 'package:student_management_apps/app/modules/auth/views/login_screen.dart';
 import 'package:student_management_apps/app/modules/dashboard/controllers/dashboard_controller.dart';
+import 'package:student_management_apps/app/modules/dashboard/views/classwork_card.dart';
+import 'package:student_management_apps/app/modules/dashboard/views/classwork_view.dart';
+import 'package:student_management_apps/app/modules/dashboard/views/course_screen.dart';
+import 'package:student_management_apps/app/modules/dashboard/views/grade_card.dart';
+import 'package:student_management_apps/app/modules/dashboard/views/homework_view.dart';
 import 'package:student_management_apps/app/modules/profile/views/profile_screen.dart';
 import 'package:student_management_apps/app/modules/students/views/student_list_screen.dart';
 
@@ -248,7 +256,7 @@ class DashboardScreen extends StatelessWidget {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => AttendanceView(),
+                              builder: (context) => AttendanceScreen(),
                             ),
                           );
                           break;
@@ -264,7 +272,7 @@ class DashboardScreen extends StatelessWidget {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => const HomeworkScreen(),
+                              builder: (context) => HomeworkView(),
                             ),
                           );
                           break;
@@ -272,7 +280,7 @@ class DashboardScreen extends StatelessWidget {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => const ClassworkScreen(),
+                              builder: (context) => ClassworkScreen(),
                             ),
                           );
                           break;
@@ -288,7 +296,7 @@ class DashboardScreen extends StatelessWidget {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => const CourseScreen(),
+                              builder: (context) => CourseScreen(),
                             ),
                           );
                           break;
@@ -296,7 +304,7 @@ class DashboardScreen extends StatelessWidget {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => const GradeScreen(),
+                              builder: (context) => GradeScreen(),
                             ),
                           );
                           break;
@@ -304,7 +312,7 @@ class DashboardScreen extends StatelessWidget {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => const TaskScreen(),
+                              builder: (context) => TaskScreen(),
                             ),
                           );
                           break;
@@ -487,7 +495,6 @@ class AssignmentView extends StatelessWidget {
 
                       trailing: IconButton(
                         icon: const Icon(Icons.delete, color: Colors.red),
-
                         onPressed: () {
                           controller.deleteAssignment(index);
                         },
@@ -533,56 +540,345 @@ class AssignmentView extends StatelessWidget {
   }
 }
 
-class HomeworkScreen extends StatelessWidget {
-  const HomeworkScreen({super.key});
+class ClassworkController extends GetxController {
+  RxList<Map<String, dynamic>> classworks = <Map<String, dynamic>>[].obs;
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold();
+  void addAssignment(String title) {
+    classworks.add({"title": title});
+  }
+
+  void deleteAssignment(int index) {
+    classworks.removeAt(index);
   }
 }
 
 class ClassworkScreen extends StatelessWidget {
-  const ClassworkScreen({super.key});
+  ClassworkScreen({super.key});
+
+  final ClassworkController controller = Get.put(ClassworkController());
+
+  final TextEditingController titleController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold();
+    return Scaffold(
+      backgroundColor: Colors.grey.shade100,
+
+      appBar: AppBar(title: const Text("Classwork"), centerTitle: true),
+
+      body: Column(
+        children: [
+          // TOP IMAGE CARD
+          Container(
+            width: double.infinity,
+            margin: const EdgeInsets.all(15),
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey.withOpacity(0.2),
+                  blurRadius: 8,
+                  spreadRadius: 2,
+                ),
+              ],
+            ),
+
+            child: Column(
+              children: [
+                Image.network(
+                  "https://i.pinimg.com/736x/ca/26/3b/ca263b96368b1717a08f39ac005af6dd.jpg",
+                  height: 120,
+                ),
+
+                const SizedBox(height: 15),
+
+                const Text(
+                  "Classwork",
+                  style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+          ),
+
+          // LIST
+          Expanded(
+            child: Obx(() {
+              if (controller.classworks.isEmpty) {
+                return const Center(
+                  child: Text("No Classwork", style: TextStyle(fontSize: 18)),
+                );
+              }
+
+              return ListView.builder(
+                itemCount: controller.classworks.length,
+
+                itemBuilder: (context, index) {
+                  final classwork = controller.classworks[index];
+                  return Card(
+                    margin: const EdgeInsets.symmetric(
+                      horizontal: 15,
+                      vertical: 8,
+                    ),
+
+                    child: ListTile(
+                      leading: CircleAvatar(
+                        backgroundColor: Colors.purple,
+                        child: Text(
+                          "${index + 1}",
+                          style: const TextStyle(color: Colors.white),
+                        ),
+                      ),
+
+                      title: Text(classwork["title"]),
+
+                      trailing: IconButton(
+                        icon: const Icon(Icons.delete, color: Colors.red),
+                        onPressed: () {
+                          controller.deleteAssignment(index);
+                        },
+                      ),
+                    ),
+                  );
+                },
+              );
+            }),
+          ),
+        ],
+      ),
+
+      floatingActionButton: FloatingActionButton(
+        child: const Icon(Icons.add),
+
+        onPressed: () {
+          Get.defaultDialog(
+            title: "Add Classwork",
+
+            content: TextField(
+              controller: titleController,
+              decoration: const InputDecoration(hintText: "Enter Classwork..."),
+            ),
+
+            textConfirm: "Save",
+
+            onConfirm: () {
+              if (titleController.text.isNotEmpty) {
+                controller.addAssignment(titleController.text);
+
+                titleController.clear();
+
+                Get.back();
+              }
+            },
+          );
+        },
+      ),
+    );
   }
 }
 
-class NotesScreen extends StatelessWidget {
-  const NotesScreen({super.key});
+// Simple Data Model for a Note
+class Note {
+  final String title;
+  final String content;
+  final String date;
+  final Color color;
+
+  Note({
+    required this.title,
+    required this.content,
+    required this.date,
+    required this.color,
+  });
+}
+
+class NotesScreen extends StatefulWidget {
+  const NotesScreen({Key? key}) : super(key: key);
+
+  @override
+  State<NotesScreen> createState() => _NotesScreenState();
+}
+
+class _NotesScreenState extends State<NotesScreen> {
+  // Sample Dummy Data
+  final List<Note> dummyNotes = [
+    Note(
+      title: 'Write C++',
+      content:
+          'C++ exercises are programming problems used to practice C++ concepts such as variables, loops, functions, arrays, classes, and object-oriented programming.',
+      date: 'May 28',
+      color: const Color(0xFFFFF9C4), // Soft Yellow
+    ),
+    Note(
+      title: 'Exercise Java Programing',
+      content:
+          'Java programming exercises are coding challenges designed to help learners practice and improve their Java programming skills. These exercises cover a wide range of topics, including basic syntax, data structures, algorithms, object-oriented programming, and more.',
+      date: 'May 30',
+      color: const Color(0xFFE1BEE7), // Soft Purple
+    ),
+    Note(
+      title: 'Exercise C#',
+      content:
+          'C# exercises are coding challenges designed to help learners practice and improve their C# programming skills. These exercises cover a wide range of topics, including basic syntax, data structures, algorithms, object-oriented programming, and more.',
+      date: 'May 15',
+      color: const Color(0xFFFFCCBC), // Soft Orange
+    ),
+    Note(
+      title: 'Exercise Flutter',
+      content:
+          'Flutter exercises are coding challenges designed to help developers practice and improve their skills in building cross-platform mobile applications using the Flutter framework. These exercises cover a wide range of topics, including basic Flutter widgets, state management, navigation, animations, and more.',
+      date: 'May 31',
+      color: const Color(0xFFC8E6C9), // Soft Green
+    ),
+    Note(
+      title: 'Exercise Javascript',
+      content:
+          'Javascript exercises are coding challenges designed to help learners practice and improve their JavaScript programming skills. These exercises cover a wide range of topics, including basic syntax, data structures, algorithms, object-oriented programming, and more.',
+      date: 'May 29',
+      color: const Color(0xFFB3E5FC), // Soft Blue
+    ),
+  ];
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold();
+    return Scaffold(
+      backgroundColor: const Color(0xFFF8F9FA),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 20),
+              // Header Title
+              const Text(
+                'My Notes',
+                style: TextStyle(
+                  fontSize: 32,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF202124),
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // Custom Search Bar
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.04),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: const TextField(
+                  decoration: InputDecoration(
+                    hintText: 'Search your notes...',
+                    hintStyle: TextStyle(color: Colors.grey),
+                    prefixIcon: Icon(Icons.search, color: Colors.grey),
+                    border: InputBorder.none,
+                    contentPadding: EdgeInsets.symmetric(vertical: 14),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 24),
+
+              // Staggered Grid of Notes
+              Expanded(
+                child: MasonryGridView.builder(
+                  gridDelegate:
+                      const SliverSimpleGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                      ),
+                  mainAxisSpacing: 12,
+                  crossAxisSpacing: 12,
+                  itemCount: dummyNotes.length,
+                  itemBuilder: (context, index) {
+                    final note = dummyNotes[index];
+                    return NoteCard(note: note);
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+
+      // Floating Action Button to Add Notes
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () {
+          // Action to create a new note
+        },
+        backgroundColor: const Color(0xFF202124),
+        icon: const Icon(Icons.add, color: Colors.white),
+        label: const Text(
+          'Add Note',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+        ),
+      ),
+    );
   }
 }
 
-class CourseScreen extends StatelessWidget {
-  const CourseScreen({super.key});
+// Reusable Custom Card Widget for an individual note
+class NoteCard extends StatelessWidget {
+  final Note note;
+
+  const NoteCard({Key? key, required this.note}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold();
-  }
-}
-
-class GradeScreen extends StatelessWidget {
-  const GradeScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold();
-  }
-}
-
-class TaskScreen extends StatelessWidget {
-  const TaskScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold();
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: note.color,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            note.title,
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF202124),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            note.content,
+            style: TextStyle(
+              fontSize: 14,
+              color: const Color(0xFF202124).withOpacity(0.75),
+              height: 1.4,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Align(
+            alignment: Alignment.bottomRight,
+            child: Text(
+              note.date,
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w500,
+                color: const Color(0xFF202124).withOpacity(0.5),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
